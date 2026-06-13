@@ -1,0 +1,31 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.13'
+    displayName: 'Use Python 3.13'
+
+  - script: |
+      pip install deepeval ollama pytest pytest-html
+    displayName: 'Install dependencies'
+
+  - script: |
+      pytest tests/test_llm_quality.py -v --html=reports/report.html
+    displayName: 'Run AI Quality Tests'
+
+  - task: PublishHtmlReport@1
+    inputs:
+      reportDir: 'reports'
+      tabName: 'AI Quality Report'
+    displayName: 'Publish HTML Report'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'reports/*.xml'
+    displayName: 'Publish Test Results'
